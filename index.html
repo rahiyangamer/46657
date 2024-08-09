@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSC 2025 Math Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        #login-container,
+        #quiz-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        input[type="text"],
+        input[type="password"],
+        input[type="radio"] {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+        .correct {
+            background-color: #d4edda;
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: red;
+            font-weight: bold;
+        }
+        #result {
+            margin: 20px 0;
+        }
+        #buttons-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-container">
+        <h1>Login</h1>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+            <div id="error-message" class="error"></div>
+        </form>
+    </div>
+
+    <div id="quiz-container" style="display: none;">
+        <h1>SSC 2025 Math Quiz</h1>
+        <div id="quiz"></div>
+        <div id="buttons-container">
+            <button id="prev-btn" onclick="goBack()">পিছনে</button>
+            <button id="submit-btn" onclick="checkAnswer()">জমা দিন</button>
+        </div>
+        <h2 id="result"></h2>
+        <button id="next-quiz-btn" style="display:none;" onclick="loadNextQuiz()">পরবতী কুইজ</button>
+    </div>
+
+    <script>
+        const quiz = [
+            { question: "1. ধারা 2, 4, 6, 8 এর ১০ম পদ কি?", options: ["10", "20", "18", "16"], answer: 1 },
+            { question: "2. বৃত্তের ব্যাসার্ধ যদি ৫ মিটার হয়, তবে এর ক্ষেত্রফল কত?", options: ["25π", "20π", "5π", "50π"], answer: 0 },
+            { question: "3. 2x + 3 = 7 হলে, x এর মান কত?", options: ["1", "2", "3", "4"], answer: 1 },
+            { question: "4. √49 এর মান কত?", options: ["5", "6", "7", "8"], answer: 2 },
+            { question: "5. 10-এর 30% কত?", options: ["3", "7", "10", "4"], answer: 0 },
+            { question: "6. একটি বৃত্তের ব্যাস 14 মিটার হলে, এর পরিধি কত?", options: ["44 মিটার", "28 মিটার", "22 মিটার", "36 মিটার"], answer: 0 },
+            { question: "7. 3 এবং 5-এর গুণফল কত?", options: ["15", "10", "8", "20"], answer: 0 },
+            { question: "8. 2/5 + 3/5 = ?", options: ["1", "5/5", "4/5", "2"], answer: 2 },
+            { question: "9. 100 - 30 + 50 = ?", options: ["120", "100", "80", "70"], answer: 0 },
+            { question: "10. একটি স্কোয়ারের একদিক 6 মিটার হলে, তার ক্ষেত্রফল কত?", options: ["36 মিটার²", "24 মিটার²", "12 মিটার²", "48 মিটার²"], answer: 0 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+        let selectedAnswers = [];
+        let wrongAnswers = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginContainer = document.getElementById('login-container');
+            const quizContainer = document.getElementById('quiz-container');
+
+            if (sessionStorage.getItem('loggedIn')) {
+                loginContainer.style.display = 'none';
+                quizContainer.style.display = 'block';
+                loadQuestion(currentQuestionIndex);
+            }
+
+            document.getElementById('login-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                if (username === 'nasrin' && password === 'ssc2025') {
+                    sessionStorage.setItem('loggedIn', 'true');
+                    loginContainer.style.display = 'none';
+                    quizContainer.style.display = 'block';
+                    loadQuestion(currentQuestionIndex);
+                } else {
+                    document.getElementById('error-message').textContent = 'Invalid username or password';
+                }
+            });
+        });
+
+        function loadQuestion(index) {
+            const question = quiz[index];
+            const quizContainer = document.getElementById('quiz');
+            quizContainer.innerHTML = `
+                <h3>${question.question}</h3>
+                ${question.options.map((option, i) => `
+                    <label>
+                        <input type="radio" name="option" value="${i}"> ${option}
+                    </label>
+                `).join('')}
+            `;
+        }
+
+        function checkAnswer() {
+            const selectedOption = document.querySelector('input[name="option"]:checked');
+            
+            if (selectedOption) {
+                const answer = parseInt(selectedOption.value);
+                const correctAnswer = quiz[currentQuestionIndex].answer;
+                
+                selectedAnswers[currentQuestionIndex] = answer;
+
+                if (answer === correctAnswer) {
+                    correctAnswers++;
+                } else {
+                    wrongAnswers.push(currentQuestionIndex + 1);
+                }
+                
+                highlightAnswers();
+                
+                if (currentQuestionIndex < quiz.length - 1) {
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        loadQuestion(currentQuestionIndex);
+                    }, 1000);
+                } else {
+                    showFinalResult();
+                }
+            } else {
+                alert('Please select an option!');
+            }
+        }
+
+        function highlightAnswers() {
+            const labels = document.querySelectorAll('label');
+            const correctAnswer = quiz[currentQuestionIndex].answer;
+
+            labels.forEach((label, index) => {
+                if (index === correctAnswer) {
+                    label.classList.add('correct');
+                } else if (selectedAnswers[currentQuestionIndex] === index) {
+                    label.classList.add('incorrect');
+                }
+            });
+        }
+
+        function showFinalResult() {
+            const resultContainer = document.getElementById('result');
+            const nextQuizBtn = document.getElementById('next-quiz-btn');
+
+            if (correctAnswers === quiz.length) {
+                resultContainer.innerHTML = `
+                    Congratulations 🎉
+                    <br>সঠিক উত্তরের সংখ্যা: ${correctAnswers}
+                `;
+                nextQuizBtn.style.display = 'block';
+            } else {
+                resultContainer.innerHTML = `
+                    😓 তুমি সব সঠিক উত্তর দিতে পারো নাই তাই আবার চেষ্টা করো
+                    <br>ভুল উত্তরগুলোর সংখ্যা: ${wrongAnswers.length}
+                    <br>ভুল উত্তরগুলি: ${wrongAnswers.join(', ')}
+                `;
+                nextQuizBtn.style.display = 'none';
+            }
+        }
+
+        function loadNextQuiz() {
+            // Load next quiz or handle further logic
+        }
+
+        function goBack() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion(currentQuestionIndex);
+                highlightAnswers();
+                document.getElementById('result').innerHTML = '';
+            } else {
+                alert('This is the first question.');
+            }
+        }
+    </script>
+</body>
+</html>
